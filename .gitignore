@@ -1,6 +1,6 @@
 dist/
 *.exe
-/pixelkeep-server
-/pixelkeep-linux-amd64
-/pixelkeep-macos-arm64
+/rogalik-server
+/rogalik-linux-amd64
+/rogalik-macos-arm64
 .DS_Store

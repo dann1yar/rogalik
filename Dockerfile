@@ -19,15 +19,15 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -trimpath -ldflags="-s -w" -o /out/pixelkeep-server ./cmd/server
+RUN go build -trimpath -ldflags="-s -w" -o /out/rogalik-server ./cmd/server
 
 # ---- Stage 2: minimal runtime ------------------------------------------
 FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
-COPY --from=builder /out/pixelkeep-server /pixelkeep-server
+COPY --from=builder /out/rogalik-server /rogalik-server
 
-ENV PIXELKEEP_ADDR=:8080
+ENV ROGALIK_ADDR=:8080
 EXPOSE 8080
 
 USER nonroot:nonroot
-ENTRYPOINT ["/pixelkeep-server"]
+ENTRYPOINT ["/rogalik-server"]

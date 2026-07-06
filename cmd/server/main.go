@@ -24,19 +24,19 @@ import (
 
 var (
 	gamesStarted = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pixelkeep_games_started_total",
+		Name: "rogalik_games_started_total",
 		Help: "Total number of game sessions started.",
 	})
 	enemiesKilled = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pixelkeep_enemies_killed_total",
+		Name: "rogalik_enemies_killed_total",
 		Help: "Total number of enemies killed across all sessions.",
 	})
 	playerDeaths = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pixelkeep_player_deaths_total",
+		Name: "rogalik_player_deaths_total",
 		Help: "Total number of player deaths across all sessions.",
 	})
 	maxLevelReached = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "pixelkeep_max_level_reached",
+		Name: "rogalik_max_level_reached",
 		Help: "Highest dungeon level reached by any session since startup.",
 	})
 
@@ -95,7 +95,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	addr := envDefault("PIXELKEEP_ADDR", ":8080")
+	addr := envDefault("ROGALIK_ADDR", ":8080")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", handleHealth)
@@ -109,7 +109,7 @@ func main() {
 		WriteTimeout: 5 * time.Second,
 	}
 
-	log.Printf("pixel-keep telemetry server listening on %s", addr)
+	log.Printf("rogalik telemetry server listening on %s", addr)
 	log.Fatal(srv.ListenAndServe())
 }
 

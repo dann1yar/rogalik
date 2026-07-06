@@ -214,7 +214,7 @@ func (g *Game) Update() error {
 	if target := g.enemyAt(nx, ny); target != nil {
 		g.attack(&g.player, target)
 		if !target.alive {
-			g.message = fmt.Sprintf("Убит %s", target.name)
+			g.message = fmt.Sprintf("Killed %s", target.name)
 			g.telemetry.Event("enemy_killed", g.level)
 			g.removeDeadEnemies()
 		}
@@ -232,7 +232,7 @@ func (g *Game) Update() error {
 
 	if g.tiles[ny][nx] == tileStairs {
 		g.level++
-		g.message = fmt.Sprintf("Спуск на уровень %d", g.level)
+		g.message = fmt.Sprintf("Descending to level %d", g.level)
 		g.telemetry.Event("level_up", g.level)
 		g.generateLevel()
 		return nil
@@ -254,7 +254,7 @@ func (g *Game) enemyTurn() {
 			g.attack(e, &g.player)
 			if !g.player.alive {
 				g.gameOver = true
-				g.message = "Вы погибли. Enter — заново"
+				g.message = "You died. Press Enter"
 				g.telemetry.Event("player_death", g.level)
 			}
 			continue
@@ -289,16 +289,16 @@ func (g *Game) applyItem(k itemKind) {
 	switch k {
 	case itemSword:
 		g.player.atk++
-		g.message = "Найден меч (+1 атака)"
+		g.message = "Found a sword (+1 ATK)"
 	case itemShield:
 		g.player.def++
-		g.message = "Найден щит (+1 защита)"
+		g.message = "Found a shield (+1 DEF)"
 	case itemPotion:
 		g.player.hp += 6
 		if g.player.hp > g.player.maxHP {
 			g.player.hp = g.player.maxHP
 		}
-		g.message = "Найдено зелье (+6 HP)"
+		g.message = "Found a potion (+6 HP)"
 	}
 }
 
@@ -389,14 +389,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	drawGlyph(screen, g.player.x, g.player.y, colPlayer, 0.9)
 
-	hud := fmt.Sprintf("HP: %d/%d  ATK: %d  DEF: %d  Уровень: %d  Ход: %d",
+	hud := fmt.Sprintf("HP: %d/%d  ATK: %d  DEF: %d  Level: %d  Turn: %d",
 		g.player.hp, g.player.maxHP, g.player.atk, g.player.def, g.level, g.turn)
 	ebitenutil.DebugPrintAt(screen, hud, 4, ScreenH-28)
 	if g.message != "" {
 		ebitenutil.DebugPrintAt(screen, g.message, 4, ScreenH-14)
 	}
 	if g.gameOver {
-		ebitenutil.DebugPrintAt(screen, "ИГРА ОКОНЧЕНА — Enter для новой попытки", ScreenW/2-140, ScreenH/2)
+		ebitenutil.DebugPrintAt(screen, "GAME OVER — press Enter to retry", ScreenW/2-140, ScreenH/2)
 	}
 }
 

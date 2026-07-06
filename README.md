@@ -1,4 +1,4 @@
-# Pixel Keep
+# Rogalik
 
 Небольшой top-down пиксельный рогалик на Go (движок [Ebiten](https://ebitengine.org/)),
 собранный не просто «для поиграть», а как учебный DevOps-полигон: кросс-платформенная
@@ -50,9 +50,9 @@ docker compose up --build
 ```
 
 - `http://localhost:8080/health` — health-check
-- `http://localhost:8080/metrics` — метрики Prometheus (`pixelkeep_games_started_total`,
-  `pixelkeep_enemies_killed_total`, `pixelkeep_player_deaths_total`,
-  `pixelkeep_max_level_reached`)
+- `http://localhost:8080/metrics` — метрики Prometheus (`rogalik_games_started_total`,
+  `rogalik_enemies_killed_total`, `rogalik_player_deaths_total`,
+  `rogalik_max_level_reached`)
 - `http://localhost:9090` — Prometheus (скрейпит сервер каждые 5с)
 - `http://localhost:3000` — Grafana (анонимный доступ включён для демо)
 
@@ -85,10 +85,10 @@ git push origin v0.1.0
 
 ```bash
 # Клиент (нужны графические заголовки ОС, см. workflow для списка apt-пакетов на Linux)
-go build -o pixelkeep-game ./cmd/game
+go build -o rogalik-game ./cmd/game
 
 # Сервер (без графики, статический бинарник)
-CGO_ENABLED=0 go build -o pixelkeep-server ./cmd/server
+CGO_ENABLED=0 go build -o rogalik-server ./cmd/server
 ```
 
 ## Примечание про модули

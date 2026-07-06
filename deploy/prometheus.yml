@@ -2,6 +2,6 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: pixelkeep-server
+  - job_name: rogalik-server
     static_configs:
-      - targets: ["pixelkeep-server:8080"]
+      - targets: ["rogalik-server:8080"]

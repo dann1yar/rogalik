@@ -29,13 +29,13 @@ jobs:
         include:
           - os: ubuntu-latest
             goos: linux
-            artifact: pixelkeep-linux-amd64
+            artifact: rogalik-linux-amd64
           - os: windows-latest
             goos: windows
-            artifact: pixelkeep-windows-amd64.exe
+            artifact: rogalik-windows-amd64.exe
           - os: macos-latest
             goos: darwin
-            artifact: pixelkeep-macos-arm64
+            artifact: rogalik-macos-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

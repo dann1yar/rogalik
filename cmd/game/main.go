@@ -16,11 +16,11 @@ import (
 )
 
 func main() {
-	telemetryURL := flag.String("telemetry", envDefault("PIXELKEEP_TELEMETRY_URL", ""), "base URL of the headless telemetry server, empty disables it")
+	telemetryURL := flag.String("telemetry", envDefault("ROGALIK_TELEMETRY_URL", ""), "base URL of the headless telemetry server, empty disables it")
 	flag.Parse()
 
 	ebiten.SetWindowSize(game.ScreenW*2, game.ScreenH*2)
-	ebiten.SetWindowTitle("Pixel Keep — pixel-art roguelike")
+	ebiten.SetWindowTitle("Rogalik — pixel-art roguelike")
 	ebiten.SetWindowResizable(true)
 
 	g := game.New(game.NewTelemetry(*telemetryURL))
