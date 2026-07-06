@@ -1,0 +1,6 @@
+dist/
+*.exe
+/pixelkeep-server
+/pixelkeep-linux-amd64
+/pixelkeep-macos-arm64
+.DS_Store

@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: pixelkeep-server
+    static_configs:
+      - targets: ["pixelkeep-server:8080"]

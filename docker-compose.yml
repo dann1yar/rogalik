@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  pixelkeep-server:
+    build: .
+    container_name: pixelkeep-server
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    # Note: the runtime image is distroless (no shell), so there's no
+    # exec-based healthcheck here. Probe GET /health externally instead
+    # (e.g. from a Kubernetes livenessProbe using httpGet).
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: pixelkeep-prometheus
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - pixelkeep-server
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: pixelkeep-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
