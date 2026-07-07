@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	TileSize   = 16
-	MapWidth   = 32
-	MapHeight  = 20
-	ScreenW    = MapWidth * TileSize
-	ScreenH    = MapHeight*TileSize + 32 // + HUD strip
+	TileSize  = 16
+	MapWidth  = 32
+	MapHeight = 20
+	ScreenW   = MapWidth * TileSize
+	ScreenH   = MapHeight*TileSize + 32 // + HUD strip
 )
 
 type tile int
@@ -27,6 +27,14 @@ const (
 	tileWall tile = iota
 	tileFloor
 	tileStairs
+)
+
+type gameState int
+
+const (
+	stateMenu gameState = iota
+	statePlaying
+	stateGameOver
 )
 
 type itemKind int
@@ -60,7 +68,7 @@ type Game struct {
 	enemies   []*entity
 	turn      int
 	message   string
-	gameOver  bool
+	state     gameState
 	telemetry *Telemetry
 }
 
@@ -71,6 +79,7 @@ func New(t *Telemetry) *Game {
 		telemetry: t,
 	}
 	g.player = entity{hp: 20, maxHP: 20, atk: 3, def: 1, alive: true, name: "Knight", glyph: '@'}
+	g.state = stateMenu
 	g.generateLevel()
 	g.telemetry.Event("game_started", g.level)
 	return g
@@ -184,9 +193,16 @@ func (g *Game) spawnEnemy(x, y int) *entity {
 // --- Update loop --------------------------------------------------------
 
 func (g *Game) Update() error {
-	if g.gameOver {
+	switch g.state {
+	case stateMenu:
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.state = statePlaying
+		}
+		return nil
+	case stateGameOver:
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			*g = *New(g.telemetry)
+			g.state = statePlaying
 		}
 		return nil
 	}
@@ -253,7 +269,7 @@ func (g *Game) enemyTurn() {
 		if abs(distX)+abs(distY) <= 1 {
 			g.attack(e, &g.player)
 			if !g.player.alive {
-				g.gameOver = true
+				g.state = stateGameOver
 				g.message = "You died. Press Enter"
 				g.telemetry.Event("player_death", g.level)
 			}
@@ -357,6 +373,14 @@ var (
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{10, 10, 14, 255})
 
+	if g.state == stateMenu {
+		screen.Fill(color. RGBA{10, 10, 14, 255})
+		ebitenutil.DebugPrintAt(screen, "ROGALIK", ScreenW/2-30, ScreenH/2-30)
+		ebitenutil.DebugPrintAt(screen, "Press Enter to start", ScreenW/2-70, ScreenH/2)
+		ebitenutil.DebugPrintAt(screen, "WASD/Arrows - move, bump to attack", ScreenW/2-110, ScreenH/2+20)
+		return
+	}
+
 	for y := 0; y < MapHeight; y++ {
 		for x := 0; x < MapWidth; x++ {
 			c := colFloor
@@ -395,7 +419,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if g.message != "" {
 		ebitenutil.DebugPrintAt(screen, g.message, 4, ScreenH-14)
 	}
-	if g.gameOver {
+	if g.state == stateGameOver {
 		ebitenutil.DebugPrintAt(screen, "GAME OVER — press Enter to retry", ScreenW/2-140, ScreenH/2)
 	}
 }
