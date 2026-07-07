@@ -33,6 +33,7 @@ type gameState int
 
 const (
 	stateMenu gameState = iota
+	stateWeaponSelect
 	statePlaying
 	stateGameOver
 )
@@ -70,6 +71,8 @@ type Game struct {
 	message   string
 	state     gameState
 	telemetry *Telemetry
+	weaponIdx int
+	weapon    weapon
 }
 
 // New creates a fresh game at dungeon level 1.
@@ -373,8 +376,22 @@ var (
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{10, 10, 14, 255})
 
+	if g.state == stateWeaponSelect {
+		screen.Fill(color.RGBA{10, 10, 14, 255})
+		ebitenutil.DebugPrintAt(screen, "Choose your weapon:", ScreenW/2-60, 60)
+		for i, w := range weapons {
+			cursor := " "
+			if i == g.weaponIdx {
+				cursor = "> "
+			}
+			line := fmt.Sprintf("%s%s ATK %d reach %d", cursor, w.name, w.atk, w.reach)
+			ebitenutil.DebugPrintAt(screen, line, ScreenW/2-80, 90+i*16)
+		}
+		return
+	}
+
 	if g.state == stateMenu {
-		screen.Fill(color. RGBA{10, 10, 14, 255})
+		screen.Fill(color.RGBA{10, 10, 14, 255})
 		ebitenutil.DebugPrintAt(screen, "ROGALIK", ScreenW/2-30, ScreenH/2-30)
 		ebitenutil.DebugPrintAt(screen, "Press Enter to start", ScreenW/2-70, ScreenH/2)
 		ebitenutil.DebugPrintAt(screen, "WASD/Arrows - move, bump to attack", ScreenW/2-110, ScreenH/2+20)
@@ -383,35 +400,44 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for y := 0; y < MapHeight; y++ {
 		for x := 0; x < MapWidth; x++ {
-			c := colFloor
 			switch g.tiles[y][x] {
 			case tileWall:
-				c = colWall
 			case tileStairs:
-				c = colStairs
 			}
-			drawTile(screen, x, y, c)
+		}
+	}
+
+	for y := 0; y < MapHeight; y++ {
+		for x := 0; x < MapWidth; x++ {
+			spr := sprFloor
+			switch g.tiles[y][x] {
+			case tileWall:
+				spr = sprWall
+			case tileStairs:
+				spr = sprStairs
+			}
+			drawSprite(screen, x, y, spr)
 		}
 	}
 
 	for pos, kind := range g.items {
-		c := colSword
+		spr := sprSword
 		switch kind {
 		case itemShield:
-			c = colShield
+			spr = sprShield
 		case itemPotion:
-			c = colPotion
+			spr = sprPotion
 		}
-		drawGlyph(screen, pos[0], pos[1], c, 0.5)
+		drawSprite(screen, pos[0], pos[1], spr)
 	}
 
 	for _, e := range g.enemies {
 		if e.alive {
-			drawGlyph(screen, e.x, e.y, e.colorK, 0.8)
+			drawSprite(screen, e.x, e.y, sprGoblin)
 		}
 	}
 
-	drawGlyph(screen, g.player.x, g.player.y, colPlayer, 0.9)
+	drawSprite(screen, g.player.x, g.player.y, sprPlayer)
 
 	hud := fmt.Sprintf("HP: %d/%d  ATK: %d  DEF: %d  Level: %d  Turn: %d",
 		g.player.hp, g.player.maxHP, g.player.atk, g.player.def, g.level, g.turn)
@@ -424,16 +450,24 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 }
 
-func drawTile(screen *ebiten.Image, x, y int, c color.RGBA) {
-	ebitenutil.DrawRect(screen, float64(x*TileSize), float64(y*TileSize), TileSize-1, TileSize-1, c)
-}
-
-func drawGlyph(screen *ebiten.Image, x, y int, c color.RGBA, scale float64) {
-	size := float64(TileSize-2) * scale
-	off := (TileSize - size) / 2
-	ebitenutil.DrawRect(screen, float64(x*TileSize)+off, float64(y*TileSize)+off, size, size, c)
+func drawSprite(screen *ebiten.Image, x, y int, spr *ebiten.Image) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(x*TileSize), float64(y*TileSize))
+	screen.DrawImage(spr, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return ScreenW, ScreenH
+}
+
+type weapon struct {
+	name  string
+	atk   int
+	reach int // 1 = ближний бой, 2 = копьё бьёт через клетку
+}
+
+var weapons = []weapon{
+	{name: "Sword", atk: 3, reach: 1},
+	{name: "Axe", atk: 5, reach: 1},
+	{name: "Spear", atk: 2, reach: 2},
 }
