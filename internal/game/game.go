@@ -199,6 +199,19 @@ func (g *Game) Update() error {
 	switch g.state {
 	case stateMenu:
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.state = stateWeaponSelect
+		}
+		return nil
+	case stateWeaponSelect:
+		if inpututil.IsKeyJustPressed(ebiten.KeyUp) && g.weaponIdx > 0 {
+			g.weaponIdx--
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyDown) && g.weaponIdx < len(weapons)-1 {
+			g.weaponIdx++
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.weapon = weapons[g.weaponIdx]
+			g.player.atk = g.weapon.atk
 			g.state = statePlaying
 		}
 		return nil
@@ -344,6 +357,22 @@ func (g *Game) inBounds(x, y int) bool {
 	return x >= 0 && x < MapWidth && y >= 0 && y < MapHeight
 }
 
+// hasFloorNeighbor: есть ли рядом (включая диагонали) проходимая клетка
+func (g *Game) hasFloorNeighbor(x, y int) bool {
+	for dy := -1; dy <= 1; dy++ {
+		for dx := -1; dx <= 1; dx++ {
+			if dx == 0 && dy == 0 {
+				continue
+			}
+			nx, ny := x+dx, y+dy
+			if g.inBounds(nx, ny) && g.tiles[ny][nx] != tileWall {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func abs(v int) int {
 	if v < 0 {
 		return -v
@@ -359,6 +388,14 @@ func sign(v int) int {
 		return -1
 	}
 	return 0
+}
+
+// вариация пола: для каждой клетки всегда одно и то же значение
+func floorVariant(x, y int) int {
+	h := uint32(x)*374761393 + uint32(y)*668265263
+	h = (h ^ (h >> 13)) * 1274126177
+	h ^= h >> 16
+	return int(h % 20)
 }
 
 // --- Rendering -----------------------------------------------------------
@@ -400,21 +437,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for y := 0; y < MapHeight; y++ {
 		for x := 0; x < MapWidth; x++ {
-			switch g.tiles[y][x] {
-			case tileWall:
-			case tileStairs:
-			}
-		}
-	}
-
-	for y := 0; y < MapHeight; y++ {
-		for x := 0; x < MapWidth; x++ {
 			spr := sprFloor
 			switch g.tiles[y][x] {
 			case tileWall:
-				spr = sprWall
+				if !g.hasFloorNeighbor(x, y) {
+					continue // глубокая стена — не рисуем, остаётся фон
+				}
+				spr = sprWall // тут поставь свой тайл забора
 			case tileStairs:
-				spr = sprStairs
+				spr = sprGate
+			case tileFloor:
+				switch floorVariant(x, y) {
+				case 0:
+					spr = sprFloorVar1
+				case 1:
+					spr = sprFloorVar2
+				}
 			}
 			drawSprite(screen, x, y, spr)
 		}
